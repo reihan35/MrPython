@@ -3,12 +3,20 @@
 
 
 class TypeAST:
+    flag = False
     def __init__(self, annotation):
         if annotation:
             self.annotated=True
             self.annotation=annotation
         else:
             self.annotated=False
+            
+    def flag(self):
+        return 
+            
+    def flagged(self):
+        print("i aaa")
+        return self.flag
 
     def rename_type_variables(self, rmap):
         raise NotImplementedError("Type variable renaming not implemented for this node type (please report)\n  ==> {}".format(self))
@@ -393,12 +401,19 @@ class TupleType(TypeAST):
         return "TupleType([{}])".format(",".join((repr(et) for et in self.elem_types)))
 
 class ListType(TypeAST):
+    
     def __init__(self, elem_type=None, annotation=None):
         super().__init__(annotation)
         if elem_type is not None and not isinstance(elem_type, TypeAST):
             raise ValueError("Element type is not a TypeAST: {}".format(elem_type))
         self.elem_type = elem_type
+    
+    def flag (self):
+        self.elem_type.flag()
+        self.flag = True
 
+    def flagged(self):
+        return self.flag
     def rename_type_variables(self, rmap):
         if self.elem_type is None:
             return self

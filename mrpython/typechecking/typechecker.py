@@ -42,7 +42,6 @@ class TypingContext:
         self.partial_function = None
         self.dead_variables = set()
         self.parent_stack = None
-        self.local_env = None
         self.call_type_env = [] # stack of type environments when calling generic functions
         self.local_env = {}  # will have global variables
 
@@ -62,7 +61,9 @@ class TypingContext:
     def register_parameters(self, parameters, param_types):
         self.param_env = {}
         for (param, param_type) in zip(parameters, param_types):
+            param_type.flag()
             self.param_env[param] = param_type
+
 
     def register_return_type(self, return_type):
         self.return_type = return_type
@@ -1132,6 +1133,7 @@ def type_infer_EVar(var, ctx):
 
     # check if the var is a parameter
     if ctx.param_env and var.name in ctx.param_env:
+        print("variable modifiable : " + str((ctx.param_env[var.name]).flagged()))
         return ctx.param_env[var.name]
     # or else lookup in the local environment
     if var.name in ctx.local_env:
@@ -1253,6 +1255,13 @@ def type_infer_ECall(call, ctx):
                 ctx.call_type_env.pop()
                 return None
         num_arg += 1
+        print([method_name for method_name in dir(object)
+                  if callable(getattr(object, method_name))])
+        print(str(arg_type) + "fdsfgsfsd " + str(arg_type.flagged()))
+        if arg_type.flagged():
+            print("E")
+            
+
 
     # step 4 : return the return type
     if ctx.call_type_env[-1]:
@@ -1413,6 +1422,7 @@ def type_infer_EList(lst, ctx):
                     ctx.add_type_error(HeterogeneousElementError('list', lst, lst_type, element_type, element))
                     return None
 
+    print(ctx.local_env)
     return ListType(lst_type)
 
 EList.type_infer = type_infer_EList
